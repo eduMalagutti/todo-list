@@ -21,7 +21,9 @@ public class UserModel {
 
     @Column(unique = true)
     private String username;
+    
     private String name;
+    
     private String password;
 
     @CreationTimestamp
