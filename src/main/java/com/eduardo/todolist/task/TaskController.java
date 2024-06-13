@@ -7,12 +7,15 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.GetMapping;
+
 
 @RestController
 @RequestMapping("/tasks")
@@ -39,5 +42,14 @@ public class TaskController {
         TaskModel taskCreated = this.taskRepository.save(taskModel);
         return ResponseEntity.status(HttpStatus.CREATED).body(taskCreated);
     }
+
+    @GetMapping("/list")
+    public List<TaskModel> getMethodName(HttpServletRequest request) {
+        
+        UUID idUser = (UUID) request.getAttribute("idUser");
+        var myTasks = this.taskRepository.findByIdUser(idUser);
+        return myTasks;
+    }
+    
 
 }

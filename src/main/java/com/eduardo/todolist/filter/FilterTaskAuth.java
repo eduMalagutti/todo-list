@@ -30,7 +30,7 @@ public class FilterTaskAuth extends OncePerRequestFilter {
 
         String path = request.getServletPath();
 
-        if (path.equals("/tasks/create")) {
+        if (path.startsWith("/tasks")) {
             String authorization = request.getHeader("Authorization");
 
             System.out.println(authorization);
@@ -58,21 +58,25 @@ public class FilterTaskAuth extends OncePerRequestFilter {
             UserModel user = this.userRepository.findByUsername(username);
 
             if (user == null) {
+
                 response.sendError(401, "usuario não existe");
+
             } else {
+
                 Result passwordVerified = BCrypt.verifyer().verify(password.toCharArray(), user.getPassword());
 
                 if (passwordVerified.verified) {
 
                     request.setAttribute("idUser", user.getId());
-                    
+
                     filterChain.doFilter(request, response);
+                
                 } else {
+                    
                     response.sendError(401, "senha incorreta");
                 }
             }
-        } else
-        {
+        } else {
             filterChain.doFilter(request, response);
         }
 
