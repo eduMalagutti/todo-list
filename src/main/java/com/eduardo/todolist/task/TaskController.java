@@ -3,6 +3,8 @@ package com.eduardo.todolist.task;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.eduardo.todolist.utils.Utils;
+
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.time.LocalDateTime;
@@ -15,6 +17,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
 
 
 @RestController
@@ -51,5 +56,27 @@ public class TaskController {
         return myTasks;
     }
     
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> update(@PathVariable UUID id, @RequestBody TaskModel taskModel, HttpServletRequest request ) {
+
+        TaskModel newTask = this.taskRepository.findById(id).orElse(null);
+
+        UUID idUser = (UUID) request.getAttribute("idUser");
+
+        if(newTask == null)
+        {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("task não encontrada");
+        }
+
+        if(!newTask.getIdUser().equals(idUser))
+        {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("usuário sem permissão");
+        }
+        
+        Utils.copyNullProperties(taskModel, newTask);
+        
+        var updatedTask = this.taskRepository.save(newTask);
+        return ResponseEntity.ok().body(updatedTask);
+    }
 
 }
