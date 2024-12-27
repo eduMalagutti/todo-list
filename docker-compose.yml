@@ -1,12 +1,31 @@
-version: '3.8'
-
 services:
-  postgres:
-    container_name: todolist_db
-    image: postgres
-    ports :
-      - '5432:5432'
+  todolist_db:
+    image: postgres:latest
     environment:
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=admin
-      - POSTGRES_DB=todolist
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: todolist
+    ports:
+      - '5432:5432'
+    networks:
+      - todolist_network
+
+  todolist_app:
+    build:
+      context: .  # Path to the directory containing the Dockerfile
+      dockerfile: Dockerfile  # Specify the Dockerfile name if not default
+    image: todolist_app:latest  # Name and tag for the built image
+    ports:
+      - '8080:8080'
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://todolist_db:5432/todolist
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: admin
+    depends_on:
+      - todolist_db
+    networks:
+      - todolist_network
+
+networks:
+  todolist_network:
+    driver: bridge

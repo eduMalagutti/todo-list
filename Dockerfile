@@ -1,20 +1,30 @@
-FROM ubuntu:latest AS build 
+# Stage 1: Build the application using Maven
+FROM ubuntu:latest AS build
 
+RUN apt-get update && \
+    apt-get install -y openjdk-17-jdk maven
 
+# Set working directory
+WORKDIR /app
 
-RUN apt-get update
-RUN apt-get install openjdk-17-jdk -y
+# Copy Maven configuration and source code
+COPY pom.xml .
+COPY src ./src
 
-COPY . .
+# Build the application
+RUN mvn clean install -DskipTests
 
-RUN apt-get install maven -y
-RUN mvn clean install
-
+# Stage 2: Create the runtime image
 FROM openjdk:17-jdk-slim
+
+# Set working directory
+WORKDIR /todolist
+
+# Expose application port
 EXPOSE 8080
 
-COPY --from=build /target/todolist-1.0.0.jar app.jar
+# Copy the built JAR from the build stage
+COPY --from=build /app/target/todolist-1.0.0.jar app.jar
 
-ENTRYPOINT [ "java", "-jar", "app.jar" ]
-
-WORKDIR /todolist
+# Define entrypoint
+ENTRYPOINT ["java", "-jar", "app.jar"]
